@@ -18,6 +18,8 @@ def get_datas(*excel_file: str) -> tuple[list[str], list[Votant], int]:
         total_choices = choices
         total_votants.extend(votants)
         total_abstention += abstention
+    print(f"Data loading complete. Number of votants: {len(total_votants)}, Total abstention: {total_abstention}.")
+    print("All votes have been extracted. Starting the counting process...")
     return total_choices, total_votants, total_abstention
 
 def extract_data_from_excel(excel_file: str) -> tuple[list[str], list[Votant], int]:
@@ -41,8 +43,8 @@ def extract_data_from_excel(excel_file: str) -> tuple[list[str], list[Votant], i
     # Replace 'NaN' with pd.NA
     df = df.replace('NaN', pd.NA).replace('N/A', pd.NA).replace('NULL', pd.NA)
 
-    # remove first 3 columns (timestamp, email, name) and last column (empty)
-    df = df.iloc[:, 3:-1]
+    # remove first 3 columns (timestamp, email, name)
+    df = df.iloc[:, 3:]
 
     # Get column titles as a string
     titles = df.columns.tolist()
@@ -54,11 +56,11 @@ def extract_data_from_excel(excel_file: str) -> tuple[list[str], list[Votant], i
 
     for index, row in df.iterrows():
         vote = row.tolist()
-        print(f"Extracting vote {index + 1}: {vote}")
         if vote[0] == "Oui":
+            print(f"Extracting vote {index + 1}: {vote}")
             votants.append(Votant(vote[1:]))
         elif vote[0] == "Non":
+            print(f"Extracting abstention {index + 1}: {vote}")
             abstention += 1
 
-    print("All votes have been extracted. Starting the counting process...")
     return choices, votants, abstention

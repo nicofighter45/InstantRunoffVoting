@@ -7,7 +7,7 @@ from votant import Votant
 
 
 
-choices, votants, abstention = get_datas("test_results.xlsx")
+choices, votants, abstention = get_datas("Test.xlsx", "Test2.xlsx")
 
 
 iter = 1
@@ -21,15 +21,20 @@ while True:
 
     votes = [0] * len(choices)
     for votant in votants:
+        print(votant.get_vote())
         votes[votant.get_vote()] += 1
 
     # Plot the vote distribution for this round
     plt.figure(figsize=(10, 6))
-    plt.bar(choices, votes, color='skyblue')
+    plt.pie(
+        votes,
+        labels=choices,
+        autopct='%1.f%%',
+        startangle=90,
+        wedgeprops={'edgecolor': 'black'}
+    )
     plt.title(f"Round {iter}: Vote Distribution")
-    plt.xlabel("Choices")
-    plt.ylabel("Number of Votes")
-    plt.xticks(rotation=45, ha='right')
+    plt.axis('equal')  # Assure que le camembert est un cercle
     plt.tight_layout()
     plt.show()
 
@@ -40,10 +45,14 @@ while True:
         max_index = votes.index(max_votes)
         print(f"The winner is {choices[max_index]} with {max_votes} votes out of {len(votants)} voters, and {abstention} abstentions.")
         break
+    elif max_votes == min_votes:
+        print(f"No winner. All remaining choices have the same number of votes ({max_votes} votes each).")
+        break
     else:
-        min_index = votes.index(min_votes)
-        print(f"No winner. Proceeding to round {iter}. The choice with the fewest votes is {choices[min_index]} with {min_votes} votes out of {len(votants)} voters.")
+        min_index_list = [i for i, v in enumerate(votes) if v == min_votes]
+        print(f"No winner. Proceeding to round {iter}. The choice(s) with the fewest votes: {[choices[i] for i in min_index_list]} with {min_votes} votes each.")
         for votant in votants:
-            votant.remove_choice(min_index)
-        choices.pop(min_index)
+            votant.remove_choices(min_index_list)
+        for min_index in sorted(min_index_list, reverse=True):
+            choices.pop(min_index)
         iter += 1
