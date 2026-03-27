@@ -1,72 +1,49 @@
 import pandas as pd
+import matplotlib.pyplot as plt
 from openpyxl import load_workbook
+
+from data_extracting import get_datas
 from votant import Votant
 
 
-excel_file = "test_results.xlsx"
 
-# Load the workbook
-wb = load_workbook(filename=excel_file, read_only=True, data_only=False)
-
-# Get the first sheet
-sheet = wb.active
-
-# Read all rows as strings
-data = []
-try:
-    for row in sheet.iter_rows(values_only=True):
-        data.append([str(cell) if cell is not None else '' for cell in row])
-except ValueError as e:
-    pass
-
-# Convert to DataFrame
-df = pd.DataFrame(data[1:], columns=data[0])
-
-# Replace 'NaN' with pd.NA
-df = df.replace('NaN', pd.NA).replace('N/A', pd.NA).replace('NULL', pd.NA)
-
-# remove first 3 columns (timestamp, email, name) and last column (empty)
-df = df.iloc[:, 3:-1]
-
-# Get column titles as a string
-titles = df.columns.tolist()
-# Extract choices from titles (remove the first, and split by " - " to get the choice name)
-choices = [title.split(" - ")[1] for title in titles[1:]]
-
-votants = []
-abstention = 0
-
-for index, row in df.iterrows():
-    vote = row.tolist()
-    print(f"Exctracting vote {index + 1}: {vote}")
-    if vote[0] == "Non":
-        votants.append(Votant(vote[1:]))
-    elif vote[0] == "Non":
-        abstention += 1
+choices, votants, abstention = get_datas("test_results.xlsx")
 
 
 iter = 1
 while True:
+    if len(choices) == 1:
+        print(f"The winner is {choices[0]} with {len(votants)} votes out of {len(votants)} voters.")
+        break
+    if len(choices) <= 0:
+        print("No winner, all choices have been eliminated.")
+        break
+
     votes = [0] * len(choices)
     for votant in votants:
         votes[votant.get_vote()] += 1
 
-    max, max_index = 0, 0
-    min, min_index = len(votants), 0
-    for i in range(len(votes)):
-        if votes[i] > max:
-            max = votes[i]
-            max_index = i
-        if votes[i] < min:
-            min = votes[i]
-            min_index = i
+    # Plot the vote distribution for this round
+    plt.figure(figsize=(10, 6))
+    plt.bar(choices, votes, color='skyblue')
+    plt.title(f"Round {iter}: Vote Distribution")
+    plt.xlabel("Choices")
+    plt.ylabel("Number of Votes")
+    plt.xticks(rotation=45, ha='right')
+    plt.tight_layout()
+    plt.show()
 
-    if max > len(votants) / 2:
-        print(f"Le gagnant est {choices[max_index]} avec {max} votes sur {len(votants)} votants.")
+    max_votes = max(votes)
+    min_votes = min(votes)
+
+    if max_votes > len(votants) / 2:
+        max_index = votes.index(max_votes)
+        print(f"The winner is {choices[max_index]} with {max_votes} votes out of {len(votants)} voters, and {abstention} abstentions.")
         break
     else:
-        iter += 1
-        print(f"Pas de gagnant. Passage au {iter} tour. Le choix avec le moins de votes est {choices[min_index]} avec {min} votes sur {len(votants)} votants.")
+        min_index = votes.index(min_votes)
+        print(f"No winner. Proceeding to round {iter}. The choice with the fewest votes is {choices[min_index]} with {min_votes} votes out of {len(votants)} voters.")
         for votant in votants:
             votant.remove_choice(min_index)
-            choices.pop(min_index)
+        choices.pop(min_index)
+        iter += 1

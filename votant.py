@@ -6,7 +6,6 @@ class Votant:
                 if vote[j] == str(i):
                     self.__vote.append(j)
 
-
     def get_vote(self) -> int:
         return self.__vote[0]
 
