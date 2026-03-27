@@ -10,7 +10,6 @@ class Votant:
         return self.__vote[0]
 
     def remove_choices(self, choices: list[int]):
-        print(self.__vote)
         for choice in choices:
             self.__vote.remove(choice)
         for i in range(len(self.__vote)):
@@ -19,4 +18,3 @@ class Votant:
                 if self.__vote[i] > choice:
                     minus += 1
             self.__vote[i] -= minus
-        print(self.__vote)

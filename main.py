@@ -21,7 +21,6 @@ while True:
 
     votes = [0] * len(choices)
     for votant in votants:
-        print(votant.get_vote())
         votes[votant.get_vote()] += 1
 
     # Plot the vote distribution for this round
