@@ -18,8 +18,9 @@ def get_datas(*excel_file: str) -> tuple[list[str], list[Votant], int]:
         total_choices = choices
         total_votants.extend(votants)
         total_abstention += abstention
-    print(f"Data loading complete. Number of votants: {len(total_votants)}, Total abstention: {total_abstention}.")
-    print("All votes have been extracted. Starting the counting process...")
+        print(f"Data loading from {file} complete. Number of votants: {len(votants)}, Abstention: {abstention}.\n")
+    print(f"Data loading for all file complete. Number of votants: {len(total_votants)}, Total abstention: {total_abstention}.")
+    print("All votes have been extracted. Starting the counting process...\n\n")
     return total_choices, total_votants, total_abstention
 
 def extract_data_from_excel(excel_file: str) -> tuple[list[str], list[Votant], int]:
